@@ -4,15 +4,14 @@ import { lusitana } from "@/ui/fonts/fonts";
 import { Button } from "@/ui/Button";
 import { ArrowRightIcon, ArrowLeftIcon } from "@heroicons/react/20/solid";
 import { useActionState } from "react";
-import { authenticate } from "../lib/actions";
-import { useSearchParams } from "next/navigation";
+import { authenticate } from "../lib/actions"; 
  
 
 export default function LoginForm() {
 
   const [errorMessage, formAction] = useActionState(authenticate, null);
-    const searchParams = useSearchParams();
-   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+ 
+ 
   return (
     <div className="flex min-h-screen items-center justify-center">
       <form action={formAction} className="space-y-3">
