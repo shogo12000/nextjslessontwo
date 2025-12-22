@@ -52,7 +52,7 @@ export const authConfig = {
 
     session: {
         strategy: "jwt",      // JWT baseado em cookie
-        maxAge: 1 * 60,       // 5 minutos em segundos
+        maxAge: 60 * 60,       // 5 minutos em segundos
     },
 
     secret: process.env.AUTH_SECRET,
@@ -80,8 +80,9 @@ export const authConfig = {
             const isLoggedIn = !!auth?.user;
             const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
             const isOnHome = nextUrl.pathname.startsWith("/home");
+            const isMyHours = nextUrl.pathname.startsWith("/myhours");
 
-            if (isOnDashboard || isOnHome) {
+            if (isOnDashboard || isOnHome || isMyHours ) {
                 if (isLoggedIn) return true;
                 return false; // bloqueia e redireciona pro login
             }
