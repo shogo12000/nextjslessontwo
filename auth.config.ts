@@ -1,12 +1,18 @@
 
 import type { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
+import { createUser } from "./ui/data/data";
+import { loginUser } from "./ui/actions/actions";
+import postgres from "postgres";
+import bcrypt from "bcrypt";
+
+export const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" });
 
 export const authConfig = {
     pages: {
         signIn: "/login",
     },
- 
+
 
     providers: [
         Credentials({
@@ -16,12 +22,30 @@ export const authConfig = {
                 const email = credentials.email as string;
                 const password = credentials.password as string;
 
-                // Aqui você valida no banco
-                if (email === "test@test.com" && password === "123") {
-                    return { id: "1", name: "Test User", email: "test@test.comx", userType: "manager" };
-                }
 
-                return null;
+                if (!email || !password) return null;
+
+                // const result = loginUser(email);
+                const result = await sql`
+                    SELECT id, name, email, password, usertype
+                    FROM users.usertb
+                    WHERE email = ${email}
+                    LIMIT 1
+                `;
+
+                if (result.count === 0) return null;
+
+                const dbUser = result[0];
+
+                const isValid = await bcrypt.compare(password, dbUser.password);
+                if (!isValid) return null;
+
+                return {
+                    id: dbUser.id,
+                    name: dbUser.name,
+                    email: dbUser.email,
+                    userType: dbUser.usertype,
+                };
             },
         }),
     ],
@@ -55,10 +79,9 @@ export const authConfig = {
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user;
             const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
+            const isOnHome = nextUrl.pathname.startsWith("/home");
 
-            console.log("isLoggedIn =xxxxxxxxxxxxxxxxx==", isLoggedIn, isOnDashboard)
-
-            if (isOnDashboard) {
+            if (isOnDashboard || isOnHome) {
                 if (isLoggedIn) return true;
                 return false; // bloqueia e redireciona pro login
             }

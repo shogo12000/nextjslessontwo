@@ -15,6 +15,7 @@ import { getUserLogin } from "../actions/actions";
 const links = [
   { name: "Home", href: "/home", icon: HomeIcon },
   { name: "Dashboard", href: "/dashboard", icon: DocumentDuplicateIcon },
+  { name: "MyHours", href: "/myhours", icon: DocumentDuplicateIcon },
 ];
 
 export default function Menu() {
