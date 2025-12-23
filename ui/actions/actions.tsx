@@ -3,6 +3,7 @@
 import postgres from "postgres";
 import bcrypt from "bcrypt";
 import { auth } from "@/auth";
+import { signOut } from "@/auth";
 
 export const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" });
 
@@ -25,26 +26,29 @@ export async function registerUser() {
   console.log("FIM............");
 }
 
+export async function logout() {
+  await signOut({ redirectTo: "/login" });
+}
 
-export async function loginUser(email:string){
-      const user = await sql`
+export async function loginUser(email: string) {
+  const user = await sql`
       SELECT id, name, email, password, usertype
       FROM users.usertb
       WHERE email = ${email}
       LIMIT 1
     `;
 
-    return user;
+  return user;
 
-    //  if(user.count === 0) return null;
+  //  if(user.count === 0) return null;
 
-    //  const isValid = await bcrypt.compare(password, user[0].password);
-     
-    //  if (!isValid) return null;
+  //  const isValid = await bcrypt.compare(password, user[0].password);
 
-    //  return {
-    //   id: user[0].id,
-    //   name: user[0].name,
-    //   userType: user[0].userType,
-    //  }
+  //  if (!isValid) return null;
+
+  //  return {
+  //   id: user[0].id,
+  //   name: user[0].name,
+  //   userType: user[0].userType,
+  //  }
 }

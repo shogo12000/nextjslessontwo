@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { logout } from "../actions/actions";
 import {
   HomeIcon,
   DocumentDuplicateIcon,
@@ -11,6 +13,7 @@ import { usePathname } from "next/navigation";
 import { auth } from "@/auth";
 import { useEffect } from "react";
 import { getUserLogin } from "../actions/actions";
+import { Button } from "@mui/material";
 
 const links = [
   { name: "Home", href: "/home", icon: HomeIcon },
@@ -23,12 +26,12 @@ export default function Menu() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [userName, setUserName] = useState<string>("");
-
+  const { data: session, status } = useSession();
   useEffect(() => {
     const getUser = async () => {
       const user = await getUserLogin();
       console.log(user?.userType);
-      if(user?.name){
+      if (user?.name) {
         setUserName(user.name);
       }
     };
@@ -64,9 +67,15 @@ export default function Menu() {
               </Link>
             );
           })}
+
+ 
+            <button className="text-red-600 hover:text-red-800 font-medium"
+            onClick={()=>logout()}>
+              Logout
+            </button>
+ 
         </div>
         <label className="pr-10">{userName}</label>
-        
       </div>
 
       {/* Mobile Hamburger */}

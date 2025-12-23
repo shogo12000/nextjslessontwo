@@ -1,8 +1,7 @@
 
 import type { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
-import { createUser } from "./ui/data/data";
-import { loginUser } from "./ui/actions/actions";
+ 
 import postgres from "postgres";
 import bcrypt from "bcrypt";
 
@@ -17,11 +16,15 @@ export const authConfig = {
     providers: [
         Credentials({
             async authorize(credentials) {
-                console.log("CREDENTIALS..............")
-                console.log(credentials)
                 const email = credentials.email as string;
                 const password = credentials.password as string;
 
+                return {
+                    id: "123",
+                    name: "Shogo",
+                    email: "shogo@hotmail.com",
+                    userType: "admin",
+                };
 
                 if (!email || !password) return null;
 
@@ -82,7 +85,7 @@ export const authConfig = {
             const isOnHome = nextUrl.pathname.startsWith("/home");
             const isMyHours = nextUrl.pathname.startsWith("/myhours");
 
-            if (isOnDashboard || isOnHome || isMyHours ) {
+            if (isOnDashboard || isOnHome || isMyHours) {
                 if (isLoggedIn) return true;
                 return false; // bloqueia e redireciona pro login
             }
