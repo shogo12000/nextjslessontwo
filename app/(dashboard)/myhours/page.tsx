@@ -78,6 +78,7 @@ export default function MyHours() {
       if (user) {
         setUser(user);
         console.log(user);
+        console.log(status);
       }
     };
     getUser();
