@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import { lusitana } from "@/ui/fonts/fonts";
 import { DateTimePicker, TimePicker } from "@mui/x-date-pickers";
 import { Button } from "@/ui/Button";
 import { TextField } from "@mui/material";
+import { useSession } from "next-auth/react";
+import { getUserLogin } from "@/ui/actions/actions";
 
 type WorkDay = {
   startWork: Dayjs | null;
@@ -14,6 +16,13 @@ type WorkDay = {
   totalBreak: string;
   totalAfterBreak: string;
   address: string;
+};
+
+type User = {
+  id: string;
+  userType: string;
+  name?: string | null;
+  email?: string | null;
 };
 
 function daysWorked(
@@ -55,6 +64,24 @@ export default function MyHours() {
   const [startBreak, setStartBreak] = useState<Dayjs | null>(null);
   const [endBreak, setEndBreak] = useState<Dayjs | null>(null);
   const [address, setAddress] = useState<string>("");
+  const { data: session, status } = useSession();
+  const [user, setUser] = useState<User>({
+    id: "",
+    userType: "",
+    name: null,
+    email: null,
+  });
+
+  useEffect(() => {
+    const getUser = async () => {
+      const user = await getUserLogin();
+      if (user) {
+        setUser(user);
+        console.log(user);
+      }
+    };
+    getUser();
+  }, [status]);
 
   const totalWork = useMemo(() => {
     if (!startWork || !endWork) return "--";
@@ -158,7 +185,8 @@ export default function MyHours() {
             <div className="font-bold text-blue-600">{totalWork}</div>
           </div>
           <div className="rounded-md p-4 text-base sm:text-sm font-medium">
-            Total Break: <div className="font-bold text-red-600">{totalBreak}</div>
+            Total Break:{" "}
+            <div className="font-bold text-red-600">{totalBreak}</div>
           </div>
           <div className="rounded-md p-4 text-base sm:text-sm font-medium">
             Total Work (after break):{" "}
@@ -201,7 +229,9 @@ export default function MyHours() {
                 <th className="border px-2 py-1 text-left">Start Time</th>
                 <th className="border px-2 py-1 text-left">End Time</th>
                 <th className="border px-2 py-1 text-left">Break</th>
-                <th className="border px-2 py-1 text-left">Total Hours - Break</th>
+                <th className="border px-2 py-1 text-left">
+                  Total Hours - Break
+                </th>
                 <th className="border px-2 py-1 text-left">Address</th>
                 <th className="border px-2 py-1 text-center">Actions</th>
               </tr>
@@ -210,10 +240,14 @@ export default function MyHours() {
               {workedDays.map((day, index) => (
                 <tr key={index} className="odd:bg-white even:bg-gray-50">
                   <td className="border px-2 py-1">
-                    {day.startWork ? day.startWork.format("YYYY-MM-DD HH:mm") : "--"}
+                    {day.startWork
+                      ? day.startWork.format("YYYY-MM-DD HH:mm")
+                      : "--"}
                   </td>
                   <td className="border px-2 py-1">
-                    {day.endWork ? day.endWork.format("YYYY-MM-DD HH:mm") : "--"}
+                    {day.endWork
+                      ? day.endWork.format("YYYY-MM-DD HH:mm")
+                      : "--"}
                   </td>
                   <td className="border px-2 py-1">{day.totalBreak}</td>
                   <td className="border px-2 py-1">{day.totalAfterBreak}</td>
@@ -238,8 +272,10 @@ export default function MyHours() {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
+                    user: user,
                     workedDays: workedDays.map((day) => ({
-                      startWork: day.startWork?.format("YYYY-MM-DD HH:mm") ?? "--",
+                      startWork:
+                        day.startWork?.format("YYYY-MM-DD HH:mm") ?? "--",
                       endWork: day.endWork?.format("YYYY-MM-DD HH:mm") ?? "--",
                       totalBreak: day.totalBreak,
                       totalAfterBreak: day.totalAfterBreak,

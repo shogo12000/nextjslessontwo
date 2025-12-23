@@ -27,7 +27,7 @@ export default function Menu() {
   useEffect(() => {
     const getUser = async () => {
       const user = await getUserLogin();
-
+      console.log(user?.userType);
       if(user?.name){
         setUserName(user.name);
       }
