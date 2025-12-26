@@ -18,14 +18,7 @@ export const authConfig = {
             async authorize(credentials) {
                 const email = credentials.email as string;
                 const password = credentials.password as string;
-
-                return {
-                    id: "123",
-                    name: "Shogo",
-                    email: "shogo@hotmail.com",
-                    userType: "admin",
-                };
-
+ 
                 if (!email || !password) return null;
 
                 // const result = loginUser(email);

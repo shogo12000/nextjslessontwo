@@ -20,10 +20,6 @@ export async function registerUser() {
         VALUES ('shogo', 'shogo12000@hotmail.com', ${hashedPassword}, 'admin')
         RETURNING id, name, email, usertype
       `;
-
-  console.log("COMECO............");
-  console.log(user);
-  console.log("FIM............");
 }
 
 export async function logout() {
@@ -51,4 +47,21 @@ export async function loginUser(email: string) {
   //   name: user[0].name,
   //   userType: user[0].userType,
   //  }
+}
+
+export async function savePhoto(
+  uploadResult: any,
+  file: { name: string },
+  user: { id: string },
+  workAddress: string
+) {
+  try {
+    await sql`
+            INSERT INTO users.photos (url, publicid, originalname, userid, workaddress)
+            VALUES (${uploadResult.secure_url}, ${uploadResult.public_id}, ${file.name}, ${user.id}, ${workAddress})
+        `;
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: "Failed to save Photo in database." };
+  }
 }

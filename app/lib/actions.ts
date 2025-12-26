@@ -71,7 +71,7 @@ export async function register(previusState: any, formData: FormData) {
         const email = result.data.email;
         const hashedPassword = await bcrypt.hash(result.data.password, 10);
         const name = result.data.name;
-        const userType = "admin";
+        const userType = "employee";
 
         const verifyEmail = await sql`
         SELECT email

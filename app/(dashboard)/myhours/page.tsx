@@ -8,10 +8,13 @@ import { Button } from "@/ui/Button";
 import { TextField } from "@mui/material";
 import { useSession } from "next-auth/react";
 import { getUserLogin } from "@/ui/actions/actions";
+import { saveWorkHours } from "@/ui/data/data";
 
 type WorkDay = {
   startWork: Dayjs | null;
   endWork: Dayjs | null;
+  startBreak: Dayjs | null;
+  endBreak: Dayjs | null;
   totalWork: string;
   totalBreak: string;
   totalAfterBreak: string;
@@ -28,6 +31,8 @@ type User = {
 function daysWorked(
   startWork: Dayjs | null,
   endWork: Dayjs | null,
+  startBreak: Dayjs | null,
+  endBreak: Dayjs | null,
   totalWork: string,
   totalBreak: string,
   totalAfterBreak: string,
@@ -44,6 +49,8 @@ function daysWorked(
     {
       startWork,
       endWork,
+      startBreak,
+      endBreak,
       totalWork,
       totalBreak,
       totalAfterBreak,
@@ -55,6 +62,21 @@ function daysWorked(
   setEndWork(null);
   setStartBreak(null);
   setEndBreak(null);
+}
+
+function workedDaysF(workedDays: WorkDay[]) {
+  const WorkedToString = workedDays.map((day) => ({
+    startWork: day.startWork?.format("YYYY-MM-DD HH:mm") ?? "--",
+    endWork: day.endWork?.format("YYYY-MM-DD HH:mm") ?? "--",
+    startBreak: day.startBreak?.format("HH:mm") ?? "--",
+    endBreak: day.endBreak?.format("HH:mm") ?? "--",
+    totalWork: day.totalWork,
+    totalBreak: day.totalBreak,
+    totalAfterBreak: day.totalAfterBreak,
+    address: day.address,
+  }));
+
+  return WorkedToString;
 }
 
 export default function MyHours() {
@@ -77,8 +99,6 @@ export default function MyHours() {
       const user = await getUserLogin();
       if (user) {
         setUser(user);
-        console.log(user);
-        console.log(status);
       }
     };
     getUser();
@@ -202,6 +222,8 @@ export default function MyHours() {
               daysWorked(
                 startWork,
                 endWork,
+                startBreak,
+                endBreak,
                 totalWork,
                 totalBreak,
                 totalAfterBreak,
@@ -267,24 +289,30 @@ export default function MyHours() {
           </table>
 
           <Button
-            onClick={async () => {
+            onClick={async () => { 
+              const myWork = workedDaysF(workedDays);
+              console.log(myWork);
               try {
                 const res = await fetch("/api/send-email", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     user: user,
-                    workedDays: workedDays.map((day) => ({
-                      startWork:
-                        day.startWork?.format("YYYY-MM-DD HH:mm") ?? "--",
-                      endWork: day.endWork?.format("YYYY-MM-DD HH:mm") ?? "--",
-                      totalBreak: day.totalBreak,
-                      totalAfterBreak: day.totalAfterBreak,
-                      address: day.address,
-                    })),
+                    workedDays: myWork,
                   }),
                 });
                 if (!res.ok) throw new Error("Failed to send email");
+
+                await fetch("/api/work-hours", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    user,
+                    workedDays: myWork,
+                  }),
+                });
+
+                setWorkedDays([]);
                 alert("Email enviado com sucesso!");
               } catch (err) {
                 console.error(err);

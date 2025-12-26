@@ -14,6 +14,8 @@ import { auth } from "@/auth";
 import { useEffect } from "react";
 import { getUserLogin } from "../actions/actions";
 import { Button } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 const links = [
   { name: "Home", href: "/home", icon: HomeIcon },
@@ -30,7 +32,6 @@ export default function Menu() {
   useEffect(() => {
     const getUser = async () => {
       const user = await getUserLogin();
-      console.log(user?.userType);
       if (user?.name) {
         setUserName(user.name);
       }
@@ -67,15 +68,29 @@ export default function Menu() {
               </Link>
             );
           })}
-
- 
-            <button className="text-red-600 hover:text-red-800 font-medium"
-            onClick={()=>logout()}>
-              Logout
-            </button>
- 
         </div>
-        <label className="pr-10">{userName}</label>
+        {/* <label className="pr-10">{userName}</label> */}
+        <IconButton
+          aria-label="Logout"
+          onClick={() => logout()}
+          sx={{
+            color: "gray",
+            "&:hover": {
+              color: "#1976d2", // azul padrão do MUI
+              backgroundColor: "rgba(25, 118, 210, 0.08)", // efeito suave
+            },
+          }}
+        >
+          <LogoutIcon />
+        </IconButton>
+        {/* <Button
+          className="text-red-600 hover:text-red-800 font-medium"
+          onClick={() => logout()}
+          variant="contained"
+          size="medium" 
+        >
+          Logout
+        </Button> */}
       </div>
 
       {/* Mobile Hamburger */}
