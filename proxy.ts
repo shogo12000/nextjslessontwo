@@ -7,8 +7,8 @@ import { Elsie_Swash_Caps } from "next/font/google";
 const { auth } = NextAuth(authConfig);
 
 const ROLE_ROUTES = {
-    admin: ["/login", "/admin", "/admin/employee"],
-    employee: ["/login", "/home", "/dashboard", "/home", "/myhours", "/workhistory"],
+    admin: [ "/admin", "/admin/employee"],
+    employee: [ "/home", "/dashboard", "/home", "/myhours", "/workhistory"],
 };
 
 export default auth(async (req: NextAuthRequest) => {
@@ -22,16 +22,10 @@ export default auth(async (req: NextAuthRequest) => {
         pathname.startsWith(route)
     );
 
-    if (role && pathname.startsWith("/login")) {
-        if (role === "admin") {
-            return NextResponse.redirect(new URL("/admin", req.url));
-        } else if (role === "employee") {
-            return NextResponse.redirect(new URL("/dashboard", req.url));
-        }
-    }
+
 
     if (!allowed) {
-        return NextResponse.redirect(new URL("/login", req.url));
+        return NextResponse.redirect(new URL("/", req.url));
     }
     // if (pathname.startsWith("/myhours") || pathname.startsWith("/workhistory")) {
     //     if (!user) {
@@ -65,6 +59,6 @@ export default auth(async (req: NextAuthRequest) => {
 });
 
 export const config = {
-    matcher: ["/home", "/login", "/dashboard/:path*", "/myhours", "/admin"],
+    matcher: ["/home", "/dashboard/:path*", "/myhours", "/admin"],
 };
 
