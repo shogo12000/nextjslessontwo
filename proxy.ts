@@ -2,12 +2,13 @@ import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
 import { NextResponse } from "next/server";
 import type { NextAuthRequest } from "next-auth";
+import { Elsie_Swash_Caps } from "next/font/google";
 
 const { auth } = NextAuth(authConfig);
 
 const ROLE_ROUTES = {
-    admin: ["/admin", "/admin/employee"],
-    employee: ["/home", "/dashboard", "/home", "/myhours", "/workhistory"],
+    admin: ["/login", "/admin", "/admin/employee"],
+    employee: ["/login", "/home", "/dashboard", "/home", "/myhours", "/workhistory"],
 };
 
 export default auth(async (req: NextAuthRequest) => {
@@ -20,6 +21,14 @@ export default auth(async (req: NextAuthRequest) => {
     const allowed = ROLE_ROUTES[role]?.some((route) =>
         pathname.startsWith(route)
     );
+
+    if (role && pathname.startsWith("/login")) {
+        if (role === "admin") {
+            return NextResponse.redirect(new URL("/admin", req.url));
+        } else if (role === "employee") {
+            return NextResponse.redirect(new URL("/dashboard", req.url));
+        }
+    }
 
     if (!allowed) {
         return NextResponse.redirect(new URL("/", req.url));
@@ -50,10 +59,12 @@ export default auth(async (req: NextAuthRequest) => {
 
     // }
 
+
+
     return NextResponse.next();
 });
 
 export const config = {
-    matcher: ["/home",  "/dashboard/:path*", "/myhours", "/admin"],
+    matcher: ["/home", "/login", "/dashboard/:path*", "/myhours", "/admin"],
 };
 
