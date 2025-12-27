@@ -5,10 +5,29 @@ import { Button } from "@/ui/Button";
 import { ArrowRightIcon, ArrowLeftIcon } from "@heroicons/react/20/solid";
 import { useActionState } from "react";
 import { login } from "../lib/actions";
+import { useEffect } from "react";
 import Link from "next/link";
+import { getUserLogin } from "@/ui/actions/actions";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
   const [errorMessage, formAction] = useActionState(login, null);
+  const router = useRouter();
+
+  const userLogin = async () => {
+    const getUser = await getUserLogin();
+
+    if (getUser?.userType === "admin") {
+      router.push("/admin"); 
+    } else if (getUser?.userType === "employee") {
+       router.push("/dashboard"); 
+    }
+  };
+  useEffect(() => {
+    if (errorMessage?.success) {
+      userLogin();
+    }
+  }, [errorMessage]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">

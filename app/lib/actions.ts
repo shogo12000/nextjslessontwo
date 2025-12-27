@@ -6,7 +6,10 @@ import { AuthError } from 'next-auth';
 import { z, treeifyError } from "zod";
 import { registerUser } from "@/ui/actions/actions";
 import { sql } from "@/ui/actions/actions";
-import bcrypt from "bcrypt";
+import bcrypt from "bcrypt"; 
+import { getUserLogin } from "@/ui/actions/actions";
+ 
+
 
 const loginSchema = z.object({
     email: z.email({ error: "invalid Email" }),
@@ -41,9 +44,14 @@ export async function login(previusState: any, formData: FormData) {
         await signIn('credentials', {
             email: result.data.email,
             password: result.data.password,
-            redirectTo: "/dashboard",
+            //redirectTo: "/admin",
+            redirect: false
         });
+ 
 
+        return { success: true };
+  
+ 
     } catch (error) {
         console.log(error);
         if (error instanceof AuthError) {

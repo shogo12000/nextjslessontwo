@@ -67,28 +67,30 @@ export const authConfig = {
         async session({ session, token }) {
             if (session.user) {
                 session.user.id = token.id as string;
-                session.user.userType = token.userType as string;
+                session.user.userType = token.userType as "admin"|"employee";
             }
             return session;
         },
 
-        authorized({ auth, request: { nextUrl } }) {
-            const isLoggedIn = !!auth?.user;
-            const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
-            const isOnHome = nextUrl.pathname.startsWith("/home");
-            const isMyHours = nextUrl.pathname.startsWith("/myhours");
+        // authorized({ auth, request: { nextUrl } }) {
+        //     const isLoggedIn = !!auth?.user;
+        //     const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
+        //     const isOnHome = nextUrl.pathname.startsWith("/home");
+        //     const isMyHours = nextUrl.pathname.startsWith("/myhours");
 
-            if (isOnDashboard || isOnHome || isMyHours) {
-                if (isLoggedIn) return true;
-                return false; // bloqueia e redireciona pro login
-            }
+        //     if (isOnDashboard || isOnHome || isMyHours) {
+        //         if (isLoggedIn) return true;
+        //         return false; // bloqueia e redireciona pro login
+        //     }
 
 
-            if (isLoggedIn && nextUrl.pathname === "/login") {
-                return Response.redirect(new URL("/dashboard", nextUrl));
-            }
+        //     if (isLoggedIn && nextUrl.pathname === "/login") {
+        //         return Response.redirect(new URL("/dashboard", nextUrl));
+        //     }
 
-            return true;
-        },
+        //     return true;
+        // },
+
+        
     },
 } satisfies NextAuthConfig;
