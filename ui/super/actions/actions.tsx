@@ -3,7 +3,7 @@
 import postgres from "postgres";
 import bcrypt from "bcrypt";
 import { auth } from "@/auth";
-import { UserDB, WorkHistory} from "@/myTypeScript";
+import { UserDB, WorkHistory } from "@/myTypeScript";
 import { redirect } from "next/navigation";
 
 export const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" });
@@ -38,12 +38,14 @@ export async function getAllUsers() {
   }
 }
 
-export async function getEmployeeWorkHistory() {
+ 
+
+export async function getEmployeeWorkHistory(userid:string) {
   await requireAuth();
   try {
     const user = await sql<WorkHistory[]>`
-      SELECT id, name, email, usertype AS "userType"
-      FROM users.usertb WHERE usertype = 'employee'
+      SELECT id, startwork, endwork, break, totalwork, totalafterbreak, address, startbreak, endbreak
+      FROM users.employeehours  WHERE employeeid = ${userid}
     `;
 
     return user;

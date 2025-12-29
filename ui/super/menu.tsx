@@ -29,6 +29,7 @@ export default function Menu() {
   const [open, setOpen] = useState(false);
   const [userName, setUserName] = useState<string>("");
   const { data: session, status } = useSession();
+  
   useEffect(() => {
     const getUser = async () => {
       const user = await getUserLogin();
