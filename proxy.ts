@@ -59,6 +59,6 @@ export default auth(async (req: NextAuthRequest) => {
 });
 
 export const config = {
-    matcher: ["/home", "/dashboard/:path*", "/myhours", "/admin"],
+    matcher: ["/home", "/dashboard/:path*", "/workhistory", "/myhours", "/admin"],
 };
 

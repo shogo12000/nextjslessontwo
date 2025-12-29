@@ -25,3 +25,15 @@ export type UserDB = {
   name?: string | null;
   email?: string | null;
 };
+
+export type WorkHistory = {
+  id: string;
+  startwork: string;
+  endwork: string;
+  break: string;
+  totalwork: string;
+  totalafterbreak: string;
+  address: string;
+  startbreak:string;
+  endbreak:string; 
+}
