@@ -22,8 +22,7 @@ export default function page() {
   useEffect(() => {
     const getUsers = async () => {
       const allUsers = await getAllUsers();
-      const usersOnly = [...allUsers];
-      console.log(usersOnly);
+      const usersOnly = [...allUsers]; 
       setEmployee(usersOnly);
     };
 
@@ -37,7 +36,7 @@ export default function page() {
     }
 
     const employeeHistory = await getEmployeeWorkHistory(id);
-    console.log(employeeHistory);
+ 
     setEmpHistory(employeeHistory);
   };
 
