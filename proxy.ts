@@ -8,7 +8,7 @@ const { auth } = NextAuth(authConfig);
 
 const ROLE_ROUTES = {
     admin: [ "/admin", "/admin/employee"],
-    employee: [ "/home", "/dashboard", "/home", "/myhours", "/workhistory"],
+    employee: [ "/home", "/dashboard", "/home", "/myhours", "/sharephoto"],
 };
 
 export default auth(async (req: NextAuthRequest) => {
