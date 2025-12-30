@@ -7,7 +7,7 @@ import { Elsie_Swash_Caps } from "next/font/google";
 const { auth } = NextAuth(authConfig);
 
 const ROLE_ROUTES = {
-    admin: [ "/admin", "/admin/employee"],
+    admin: [ "/admin", "/admin/employee", "/admin/photos"],
     employee: [ "/home", "/dashboard", "/home", "/myhours", "/sharephoto"],
 };
 

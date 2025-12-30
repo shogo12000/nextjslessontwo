@@ -37,3 +37,13 @@ export type WorkHistory = {
   startbreak:string;
   endbreak:string; 
 }
+
+export type ProjectAddress = { 
+    workaddress: string;
+}
+
+export type ProjectPhotos = {
+  url: string;
+  datesaved: string;
+  workaddress: string;
+}

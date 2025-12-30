@@ -2,7 +2,9 @@
 import { useEffect, useState } from "react";
 
 export default function Page() {
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
+    null
+  );
   const [time, setTime] = useState<string>("");
 
   useEffect(() => {
@@ -37,11 +39,20 @@ export default function Page() {
       <p>Current time: {time}</p>
 
       {location && (
-        <p>
-          Latitude: {location.lat}
-          <br />
-          Longitude: {location.lng}
-        </p>
+        <>
+          <p>
+            Latitude: {location.lat}
+            <br />
+            Longitude: {location.lng}
+          </p>
+
+          <iframe
+            width="100%"
+            height="300"
+            loading="lazy"
+            src={`https://www.google.com/maps?q=${location.lat},${location.lng}&z=15&output=embed`}
+          />
+        </>
       )}
     </div>
   );

@@ -3,7 +3,7 @@
 import postgres from "postgres";
 import bcrypt from "bcrypt";
 import { auth } from "@/auth";
-import { UserDB, WorkHistory } from "@/myTypeScript";
+import { UserDB, WorkHistory, ProjectAddress, ProjectPhotos } from "@/myTypeScript";
 import { redirect } from "next/navigation";
 
 export const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" });
@@ -38,9 +38,7 @@ export async function getAllUsers() {
   }
 }
 
- 
-
-export async function getEmployeeWorkHistory(userid:string) {
+export async function getEmployeeWorkHistory(userid: string) {
   await requireAuth();
   try {
     const user = await sql<WorkHistory[]>`
@@ -51,6 +49,36 @@ export async function getEmployeeWorkHistory(userid:string) {
     return user;
   } catch (err) {
     console.error("getAllUsers error:", err);
+    throw err;
+  }
+}
+
+export async function getProjectAddress(userid: string) {
+  await requireAuth();
+  try {
+    const user = await sql<ProjectAddress[]>`
+      SELECT DISTINCT ON (workaddress)   workaddress
+      FROM users.photos  WHERE userid = ${userid}
+    `;
+
+    return user;
+  } catch (err) {
+    console.error("getAllPhotos error:", err);
+    throw err;
+  }
+}
+
+export async function getPhotos(address: string) {
+  await requireAuth();
+  try {
+    const photos = await sql<ProjectPhotos[]>`
+      SELECT url, datesaved, workaddress
+      FROM users.photos  WHERE workaddress = ${address}
+    `;
+
+    return photos;
+  } catch (err) {
+    console.error("getAllPhotos error:", err);
     throw err;
   }
 }
