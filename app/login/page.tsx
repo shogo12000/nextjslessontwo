@@ -11,16 +11,16 @@ import { getUserLogin } from "@/ui/actions/actions";
 import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
-  const [errorMessage, formAction] = useActionState(login, null);
+  const [errorMessage, formAction, isPending] = useActionState(login, null);
   const router = useRouter();
 
   const userLogin = async () => {
     const getUser = await getUserLogin();
 
     if (getUser?.userType === "admin") {
-      router.push("/admin"); 
+      router.push("/admin");
     } else if (getUser?.userType === "employee") {
-       router.push("/dashboard"); 
+      router.push("/dashboard");
     }
   };
   useEffect(() => {
@@ -77,9 +77,11 @@ export default function LoginForm() {
                 />
               </div>
 
-              <Button className="mt-5 w-full">
-                Login{" "}
-                <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
+              <Button className="mt-5 w-full" disabled={isPending}>
+                {isPending ? "Logging in..." : "Login"}
+                {!isPending && (
+                  <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
+                )}
               </Button>
 
               {errorMessage?.errors?.properties?.email?.errors?.[0] && (

@@ -112,12 +112,12 @@ export default function Menu() {
       <div
         className={`
           md:hidden
-          fixed top-12 left-0 right-0 bg-white z-40
-          overflow-hidden transition-all duration-900 ease-in-out
-          ${open ? "max-h-96" : "max-h-0"}
+          fixed top-12 left-0 right-0 bg-amber-100 z-40
+          overflow-hidden transition-all duration-900 ease-in-out h-full
+          ${open ? "max-h-full" : "max-h-0"}
         `}
       >
-        <div className="flex flex-col gap-1 p-2">
+        <div className="flex flex-col gap-1 p-2 ">
           {links.map((link) => {
             const LinkIcon = link.icon;
             const isActive = pathname === link.href;
@@ -144,6 +144,25 @@ export default function Menu() {
               </Link>
             );
           })}
+
+          <Link
+            key={"logout"}
+            href={""}
+            onClick={() => logout()}
+            className={`
+                  flex items-center justify-start
+                  w-full h-12
+                  gap-2
+                  rounded-md
+                  text-sm font-medium
+                  p-2.5
+                  border-b border-gray-300
+                  last:border-b-0 
+                  hover:bg-sky-100 hover:text-blue-600
+                `}
+          >
+            <LogoutIcon /> Signout
+          </Link>
         </div>
       </div>
 

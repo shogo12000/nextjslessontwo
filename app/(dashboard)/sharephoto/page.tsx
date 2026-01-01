@@ -22,6 +22,7 @@ export default function Home() {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [workAddress, setWorkAddress] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
   // Quando seleciona arquivos
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -46,38 +47,44 @@ export default function Home() {
 
   // Enviar para o backend
   async function handleUpload() {
-    if(workAddress === null || workAddress===""){
-      alert("Please Insert pic address!!!")
+    if (!workAddress) {
+      alert("Please insert pic address!");
       return;
     }
 
     if (selectedFiles.length === 0) return;
 
-    const formData = new FormData();
-    selectedFiles.forEach((file) => formData.append("files", file));
+    setIsUploading(true); // 🔹 começa loading
 
-    formData.append("workAddress", workAddress)
+    try {
+      const formData = new FormData();
+      selectedFiles.forEach((file) => formData.append("files", file));
+      formData.append("workAddress", workAddress);
 
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (data.success) {
-      setWorkAddress("");
-      alert("all photo was submited...");
+      if (data.success) {
+        setWorkAddress("");
+        alert("All photos were submitted!");
 
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+
+        setSelectedFiles([]);
+        setPreviewUrls([]);
       }
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed");
+    } finally {
+      setIsUploading(false); // 🔹 termina loading
     }
-
-    console.log(data);
-    // Limpar previews e arquivos
-    setSelectedFiles([]);
-    setPreviewUrls([]);
   }
 
   // Cancelar seleção
@@ -88,12 +95,11 @@ export default function Home() {
 
   return (
     <div className="p-4">
- 
       <div className="flex flex-col">
         <TextField
           id="workaddress"
           value={workAddress}
-          onChange={(e)=>setWorkAddress(e.target.value)}
+          onChange={(e) => setWorkAddress(e.target.value)}
           name="workaddress"
           label="Address"
           variant="outlined"
@@ -130,7 +136,10 @@ export default function Home() {
           <div className="mt-4 flex gap-2">
             <button
               onClick={handleUpload}
-              className="bg-blue-500 text-white px-4 py-2 rounded"
+              disabled={isUploading}
+              className={`px-4 py-2 rounded text-white ${
+                isUploading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500"
+              }`}
             >
               Enviar
             </button>

@@ -7,6 +7,18 @@ import {
 import { useEffect, useState } from "react";
 import { ProjectAddress, UserDB, ProjectPhotos } from "@/myTypeScript";
 
+function formatDate(date: string | Date | null) {
+  if (!date) return "-";
+
+  return new Date(date).toLocaleString("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    // hour: "2-digit",
+    // minute: "2-digit",
+  });
+}
+
 export default function Page() {
   const [employee, setEmployee] = useState<UserDB[]>([]);
   const [address, setAddress] = useState<ProjectAddress[]>([]);
@@ -30,6 +42,7 @@ export default function Page() {
 
   const getAllPhotos = async (address: string) => {
     const savedPhotos = await getPhotos(address);
+    console.log(savedPhotos);
     setPhotos([...savedPhotos]);
   };
 
@@ -75,18 +88,22 @@ export default function Page() {
       )}
 
       {photos.length > 0 && (
-        <div className="grid grid-cols-3 gap-4 mt-6">
-          {photos.map((photo, index) => (
-            <div key={index} className="flex flex-col items-center">
-              <img
-                src={photo.url}
-                alt={photo.workaddress}
-                className="w-full h-auto rounded"
-              />
-              <p className="mt-2 text-sm">{photo.workaddress}</p>
-            </div>
-          ))}
-        </div>
+        <>
+ 
+          <div className="grid grid-cols-3 gap-4 mt-6">
+            {photos.map((photo, index) => (
+              <div key={index} className="flex flex-col items-center">
+                <img
+                  src={photo.url}
+                  alt={photo.workaddress}
+                  className="w-full h-auto rounded"
+                />
+                <p className="mt-2 text-sm">{photo.workaddress}</p>
+                <p className="mt-2 text-sm">{formatDate(photo.datesaved)}</p>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

@@ -10,6 +10,9 @@ import { UserDB, WorkHistory } from "@/myTypeScript";
 function formatTime(date: string | Date | null) {
   if (!date) return "-";
   return new Date(date).toLocaleTimeString("en-CA", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -84,10 +87,10 @@ export default function Page() {
                     {formatTime(row.endwork)}
                   </td>
                   <td className="border px-2 py-1">
-                    {row.startbreak ? formatTime(row.startbreak) : "-"}
+                    {row.startbreak ? row.startbreak : "-"}
                   </td>
                   <td className="border px-2 py-1">
-                    {row.endbreak ? formatTime(row.endbreak) : "-"}
+                    {row.endbreak ? row.endbreak : "-"}
                   </td>
                   <td className="border px-2 py-1">{row.break} min</td>
                   <td className="border px-2 py-1">{row.totalwork} h</td>
