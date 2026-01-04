@@ -1,3 +1,4 @@
+"use client"
 import { ArrowRightIcon } from "@mui/x-date-pickers";
 import Link from "next/link";
 
@@ -6,7 +7,7 @@ export function CreateProject() {
     <Link
       href="/admin/project/create"
       className="
-        flex h-14 items-center gap-2
+        flex h-14 items-center gap-2 justify-between
         rounded bg-[#1976d2]
         px-4 text-[14px] font-medium text-white
         hover:bg-[#1565c0]
@@ -14,10 +15,12 @@ export function CreateProject() {
         whitespace-nowrap
         "
     >
-      New Project
-      <span className="hidden md:flex">
+      <span className="md:hidden">Create New Project</span>
+ 
+      <span className="hidden md:block">New Project</span>
+     
         <ArrowRightIcon className="h-5 w-5" />
-      </span>
+     
     </Link>
   );
 }

@@ -5,6 +5,7 @@ import { AuthError } from 'next-auth';
 import { z, treeifyError } from "zod";
 import { getUserLogin, sql } from "@/ui/actions/actions";
 import bcrypt from "bcrypt";
+import { ProjectsTable } from "@/myTypeScript";
 
 
 
@@ -25,6 +26,8 @@ const registerSchema = z.object({
         path: ["passwordrepeat"], // erro aparece nesse campo
     }
 );
+
+
 
 const projectSchema = z.object({
     projectName: z
@@ -189,6 +192,7 @@ export async function createProject(previusState: any, formData: FormData) {
             notes: formData.get("notes"),
         });
 
+
         if (!result.success) {
             return { errors: treeifyError(result.error) };
         }
@@ -204,9 +208,14 @@ export async function createProject(previusState: any, formData: FormData) {
         const projectType = result.data.projectType?.toString() ?? "";
         const status = result.data.status?.toString() ?? "";
         const budget = result.data.budget?.toString() ?? "";
-        const employees= result.data.employees?.toString() ?? "";
+        const employees = result.data.employees?.toString() ?? "";
         // const employees: string[] = result.data.employees ?? [];
-        const employeesJson = JSON.stringify(employees);
+
+        const employeesRaw = result.data.employees ?? [];
+        const employeesArray = employeesRaw.flatMap(emp =>
+            typeof emp === "string" ? emp.split(",").map(e => e.trim()) : []
+        );
+        const employeesJson = JSON.stringify(employeesArray);
         const notes = result.data.notes?.toString() ?? "";
 
         const createProject = await sql`
@@ -253,4 +262,30 @@ export async function createProject(previusState: any, formData: FormData) {
         };
     }
 
+}
+
+
+export async function updateProject(id: string, prevState: any, formData: FormData) {
+    const validateFields = projectSchema.safeParse({
+        projectName: formData.get("projectName"),
+        address: formData.get("address"),
+        description: formData.get("description"),
+        startDate: formData.get("startDate"),
+        endDate: formData.get("endDate"),
+        projectManager: formData.get("projectManager"),
+        clientName: formData.get("clientName"),
+        projectType: formData.get("projectType"),
+        status: formData.get("status"),
+        budget: formData.get("budget"),
+        employees: formData.getAll("employees"),
+        notes: formData.get("notes"),
+    });
+
+    if (!validateFields.success) {
+        return {
+            errors: validateFields.error.flatten().fieldErrors,
+            message: 'Missing Fields. Failed to Update Invoice.',
+        };
+    }
+    return null;
 }

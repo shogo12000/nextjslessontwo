@@ -47,3 +47,20 @@ export type ProjectPhotos = {
   datesaved: string;
   workaddress: string;
 }
+
+export type ProjectsTable = {
+  id: string;
+  projectname: string;
+  address: string;
+  description: string;
+  startdate: string;
+  enddate: string;
+  projectmanager: string;
+  clientname: string;
+  projecttype: string;
+  status: string;
+  budget: string;
+  employees:string;
+  notes: string;
+  emp: string[];
+}

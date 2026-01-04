@@ -2,7 +2,7 @@
 
 import postgres from "postgres";
 import bcrypt from "bcrypt";
-import { UserDB, WorkDayDB } from "@/myTypeScript";
+import { UserDB, WorkDayDB, ProjectsTable } from "@/myTypeScript";
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
@@ -61,3 +61,74 @@ export async function saveWorkHours(user: UserDB, workedDays: WorkDayDB[]) {
   return { success: true };
 }
 
+export async function fetchFilterProjects(query: string){
+
+  try{
+    const projects = await sql<ProjectsTable[]>`
+      SELECT
+        id,
+        projectname, 
+        address, 
+        description,
+        startdate,
+        enddate,
+        projectmanager,
+        clientname,
+        projecttype,
+        status,
+        budget,
+        employees,
+        notes,
+        emp::jsonb
+      FROM users.project WHERE 
+        projectname ILIKE ${`%${query}%`} OR
+        address ILIKE ${`%${query}%`} OR
+        description ILIKE ${`%${query}%`} OR
+        startdate ILIKE ${`%${query}%`} OR
+        enddate ILIKE ${`%${query}%`} OR
+        projectmanager ILIKE ${`%${query}%`} OR
+        clientname ILIKE ${`%${query}%`} OR
+        projecttype ILIKE ${`%${query}%`} OR
+        status ILIKE ${`%${query}%`} OR
+        budget ILIKE ${`%${query}%`} OR
+        employees ILIKE ${`%${query}%`} OR
+        notes ILIKE ${`%${query}%`}
+      `;
+
+      return projects;
+
+  }catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch invoices.');
+  }
+}
+
+
+export async function fetchProjectById(id: string){
+  try{
+    const data = await sql<ProjectsTable[]>`
+      SELECT 
+        id,
+        projectname,
+        address,
+        description,
+        userid,
+        startdate,
+        enddate,
+        projectmanager,
+        clientname,
+        projecttype,
+        status,
+        budget,
+        employees,
+        notes
+      FROM users.project 
+      WHERE id = ${id}
+    `;
+
+    return data[0];
+  }catch(error){
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch project.');
+  }
+}
