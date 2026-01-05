@@ -6,7 +6,8 @@ import { z, treeifyError } from "zod";
 import { getUserLogin, sql } from "@/ui/actions/actions";
 import bcrypt from "bcrypt";
 import { ProjectsTable } from "@/myTypeScript";
-
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 
 const loginSchema = z.object({
@@ -26,7 +27,6 @@ const registerSchema = z.object({
         path: ["passwordrepeat"], // erro aparece nesse campo
     }
 );
-
 
 
 const projectSchema = z.object({
@@ -87,7 +87,6 @@ const projectSchema = z.object({
         .optional()
         .or(z.literal("")),
 });
-
 
 export async function login(previusState: any, formData: FormData) {
     try {
@@ -264,28 +263,65 @@ export async function createProject(previusState: any, formData: FormData) {
 
 }
 
-
 export async function updateProject(id: string, prevState: any, formData: FormData) {
-    const validateFields = projectSchema.safeParse({
-        projectName: formData.get("projectName"),
-        address: formData.get("address"),
-        description: formData.get("description"),
-        startDate: formData.get("startDate"),
-        endDate: formData.get("endDate"),
-        projectManager: formData.get("projectManager"),
-        clientName: formData.get("clientName"),
-        projectType: formData.get("projectType"),
-        status: formData.get("status"),
-        budget: formData.get("budget"),
-        employees: formData.getAll("employees"),
-        notes: formData.get("notes"),
-    });
+    try {
+        const result = projectSchema.safeParse({
+            projectName: formData.get("projectName"),
+            address: formData.get("address"),
+            description: formData.get("description"),
+            startDate: formData.get("startDate"),
+            endDate: formData.get("endDate"),
+            projectManager: formData.get("projectManager"),
+            clientName: formData.get("clientName"),
+            projectType: formData.get("projectType"),
+            status: formData.get("status"),
+            budget: formData.get("budget"),
+            employees: formData.getAll("employees"),
+            notes: formData.get("notes"),
+        });
 
-    if (!validateFields.success) {
-        return {
-            errors: validateFields.error.flatten().fieldErrors,
-            message: 'Missing Fields. Failed to Update Invoice.',
-        };
+        if (!result.success) {
+            return {
+                errors: result.error.flatten().fieldErrors,
+                message: 'Missing Fields. Failed to Update Invoice.',
+            };
+        }
+
+        const projectName = result.data.projectName;
+        const address = result.data.address;
+        const description = result.data.description?.toString() ?? "";
+        const startDate = result.data.startDate?.toString() ?? "";
+        const endDate = result.data.endDate?.toString() ?? "";
+        const projectManager = result.data.projectManager?.toString() ?? "";
+        const clientName = result.data.clientName?.toString() ?? "";
+        const projectType = result.data.projectType?.toString() ?? "";
+        const status = result.data.status?.toString() ?? "";
+        const budget = result.data.budget?.toString() ?? "";
+        const employees = result.data.employees?.toString() ?? "";
+        const notes = result.data.notes?.toString() ?? "";
+        const employeesRaw = result.data.employees ?? [];
+        const employeesArray = employeesRaw.flatMap(emp =>
+            typeof emp === "string" ? emp.split(",").map(e => e.trim()) : []
+        );
+
+        await sql`UPDATE users.project
+        SET projectname = ${projectName},
+            address = ${address},
+            description = ${description}, 
+            startdate = ${startDate},
+            enddate= ${endDate},
+            projectmanager = ${projectManager},
+            projecttype = ${projectType},
+            status = ${status},
+            budget = ${budget},
+            employees = ${employees},
+            notes = ${notes} 
+        WHERE id = ${id}`;
+
+    } catch (error) {
+        return { message: 'Error try again later' }
     }
-    return null;
+
+    revalidatePath('/admin/project');
+    redirect('/admin/project');
 }

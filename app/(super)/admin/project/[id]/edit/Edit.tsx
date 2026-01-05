@@ -45,21 +45,20 @@ export default function Edit({ data }: EditProps) {
       [name]: value,
     }));
   };
- 
+
   const updateWithId = updateProject.bind(null, data.id);
   const [errorMessage, formUpdateProject, isPending] = useActionState(
     updateWithId,
     null
-  );
-
-  console.log(errorMessage)
+  ); 
+  
   return (
     <div className="flex w-full justify-center items-start pt-10">
       <form action={formUpdateProject} className="w-full">
         <div className="rounded-lg bg-gray-50 px-6 pb-6 pt-8 shadow">
           <h1 className={`${lusitana.className} mb-6 text-2xl`}>
             Create New Project
-          </h1> 
+          </h1>
 
           <div className="flex flex-col gap-4">
             {/* Project Name */}
@@ -73,6 +72,14 @@ export default function Edit({ data }: EditProps) {
               fullWidth
             />
 
+            {errorMessage?.errors?.projectName?.[0] && (
+              <>
+                <p className="text-sm text-red-500">
+                  {errorMessage?.errors?.projectName?.[0]}
+                </p>
+              </>
+            )}
+
             {/* Address */}
             <TextField
               label="Project Address"
@@ -83,6 +90,14 @@ export default function Edit({ data }: EditProps) {
               required
               fullWidth
             />
+
+            {errorMessage?.errors?.address?.[0] && (
+              <>
+                <p className="text-sm text-red-500">
+                  {errorMessage?.errors?.address?.[0]}
+                </p>
+              </>
+            )}
 
             {/* Description */}
             <TextField
@@ -210,6 +225,14 @@ export default function Edit({ data }: EditProps) {
               rows={3}
               fullWidth
             />
+
+            {errorMessage?.message && (
+              <>
+                <p className="text-sm text-red-500">
+                  {errorMessage?.message}
+                </p>
+              </>
+            )}
 
             {/* Submit */}
             <Button

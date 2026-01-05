@@ -18,7 +18,7 @@ import IconButton from "@mui/material/IconButton";
 import LogoutIcon from "@mui/icons-material/Logout";
 
 const links = [
-  { name: "Home", href: "/home", icon: HomeIcon },
+  // { name: "Home", href: "/home", icon: HomeIcon },
   { name: "Admin", href: "/admin", icon: DocumentDuplicateIcon },
   { name: "Employee", href: "/admin/employee", icon: DocumentDuplicateIcon },
   { name: "Photos", href: "/admin/photos", icon: DocumentDuplicateIcon },

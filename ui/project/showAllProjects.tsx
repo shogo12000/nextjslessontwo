@@ -12,8 +12,8 @@ function parseEmployees(employeesStr: string | null | undefined): string {
   return emp.length.toString();
 }
 
-export default async function ShowAllTables({ query }: { query: string }) {
-  const projects = await fetchFilterProjects(query);
+export default async function ShowAllTables({ query, currentPage }: { query: string; currentPage: number }) {
+  const projects = await fetchFilterProjects(query, currentPage);
 
   console.log(projects);
   return (

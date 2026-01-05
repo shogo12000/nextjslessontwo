@@ -3,6 +3,8 @@ import { lusitana } from "@/ui/fonts/fonts";
 import { CreateProject } from "@/ui/project/buttons";
 import ShowAllTables from "@/ui/project/showAllProjects";
 import Search from "@/ui/search";
+import { fetchProjectPages } from "@/ui/data/data";
+import Pagination from "@/ui/project/pagination";
 
 export default async function Page({
   searchParams,
@@ -14,7 +16,8 @@ export default async function Page({
 }) {
   const searchParamsx = await searchParams;
   const query = searchParamsx?.query || "";
-  console.log(query);
+  const currentPage = Number(searchParamsx?.page) || 1;
+  const totalPages = await fetchProjectPages(query);
 
   return (
     <div className="flex w-full flex-col justify-center items-start pt-10 p-3">
@@ -22,9 +25,12 @@ export default async function Page({
         <Search />
         <CreateProject />
       </div>
- 
-        <ShowAllTables query={query} />
- 
+
+      <ShowAllTables query={query} currentPage={currentPage} />
+
+      <div className="mt-5 flex w-full justify-center">
+        <Pagination totalPages={totalPages} />
+      </div>
     </div>
   );
 }

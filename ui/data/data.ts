@@ -27,7 +27,7 @@ export async function saveWorkHours(user: UserDB, workedDays: WorkDayDB[]) {
 
   if (workedDays.length === 0) {
     throw new Error("No work hours to save");
-  }  
+  }
 
   for (const day of workedDays) {
     console.log("comec................")
@@ -56,14 +56,16 @@ export async function saveWorkHours(user: UserDB, workedDays: WorkDayDB[]) {
           ${day.endBreak},
           ${day.address}
         )`;
-  } 
+  }
 
   return { success: true };
 }
 
-export async function fetchFilterProjects(query: string){
+export async function fetchFilterProjects(query: string, currentPage: number) {
+  const ITEMS_PER_PAGE = 6;
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
-  try{
+  try {
     const projects = await sql<ProjectsTable[]>`
       SELECT
         id,
@@ -93,19 +95,20 @@ export async function fetchFilterProjects(query: string){
         budget ILIKE ${`%${query}%`} OR
         employees ILIKE ${`%${query}%`} OR
         notes ILIKE ${`%${query}%`}
+        LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
       `;
 
-      return projects;
+    return projects;
 
-  }catch (error) {
+  } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoices.');
   }
 }
 
 
-export async function fetchProjectById(id: string){
-  try{
+export async function fetchProjectById(id: string) {
+  try {
     const data = await sql<ProjectsTable[]>`
       SELECT 
         id,
@@ -127,8 +130,23 @@ export async function fetchProjectById(id: string){
     `;
 
     return data[0];
-  }catch(error){
+  } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch project.');
+  }
+}
+
+export async function fetchProjectPages(query: string) {
+  const ITEMS_PER_PAGE = 6;
+  try {
+    const data = await sql`SELECT COUNT(*)
+    FROM users.project
+  `;
+
+    const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of invoices.');
   }
 }
