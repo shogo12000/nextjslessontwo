@@ -150,3 +150,14 @@ export async function fetchProjectPages(query: string) {
     throw new Error('Failed to fetch total number of invoices.');
   }
 }
+
+export async function getAllEmployees(){
+  try{
+
+    const data = await sql<{id: string, name: string}[]> `SELECT id, name FROM users.usertb WHERE usertype= ${"employee"}`;
+    return data;
+  }catch(error){
+    throw new Error('Failed to get employees.')
+  }
+ 
+}
