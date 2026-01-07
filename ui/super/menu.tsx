@@ -23,6 +23,7 @@ const links = [
   { name: "Employee", href: "/admin/employee", icon: DocumentDuplicateIcon },
   { name: "Photos", href: "/admin/photos", icon: DocumentDuplicateIcon },
   { name: "Project", href: "/admin/project", icon: DocumentDuplicateIcon },
+    { name: "Schedule", href: "/admin/schedule", icon: DocumentDuplicateIcon },
 ];
 
 export default function Menu() {

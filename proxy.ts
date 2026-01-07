@@ -7,8 +7,8 @@ import { Elsie_Swash_Caps } from "next/font/google";
 const { auth } = NextAuth(authConfig);
 
 const ROLE_ROUTES = {
-    admin: [ "/admin", "/admin/employee", "/admin/photos", "/admin/project", "/admin/project/create","/admin/project/[id]/edit"],
-    employee: [ "/home", "/dashboard", "/home", "/myhours", "/sharephoto"],
+    admin: ["/admin", "/admin/employee", "/admin/photos", "/admin/project", "/admin/project/create", "/admin/project/[id]/edit", "/admin/schedule"],
+    employee: ["/home", "/dashboard", "/home", "/myhours", "/sharephoto"],
 };
 
 export default auth(async (req: NextAuthRequest) => {
@@ -59,6 +59,6 @@ export default auth(async (req: NextAuthRequest) => {
 });
 
 export const config = {
-    matcher: ["/home", "/dashboard/:path*", "/workhistory", "/myhours", "/admin"],
+    matcher: ["/home", "/dashboard/:path*", "/workhistory", "/myhours", "/admin", "/admin/schedule", "/admin/project", "/admin/project/:path*" ],
 };
 
