@@ -1,5 +1,5 @@
 "use client";
-
+import { eachDayOfInterval } from "date-fns";
 import { useState, useEffect } from "react";
 import {
   addMonths,
@@ -13,23 +13,76 @@ import {
   isSameDay,
   getDay,
 } from "date-fns";
+import { deleteSchedule, getSchedule } from "@/ui/data/data";
 
 type CalendarEvent = {
   id: string;
+  idUnique: string;
   title: string;
   employees: string;
+  tasks: string;
   start: Date;
   end: Date;
 };
 
-type Props = {
-  events: CalendarEvent[];
-};
+const NAV_HEIGHT = 64;
 
-export default function MonthlyCalendar({ events }: Props) {
+export default function MonthlyCalendar() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isMobile, setIsMobile] = useState(false);
+  const [schedule, setSchedule] = useState<CalendarEvent[]>([]);
 
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteSchedule(id);
+
+      setSchedule((prev) => prev.filter((event) => event.id !== id));
+    } catch (error) {
+      console.error("Error deleting schedule", error);
+      alert("Error deleting schedule");
+    }
+  };
+
+  useEffect(() => {
+    const getSched = async () => {
+      const result = await getSchedule();
+
+      const formatted: CalendarEvent[] = result.flatMap((item: any) => {
+        // Se a data vem no formato "YYYY-MM-DD", separar ano, mês e dia
+        const startParts = item.start_date.split("-"); // ex: "2026-01-12"
+        const endParts = item.end_date.split("-");
+
+        // Criar datas apenas com ano, mês e dia (hora = 00:00)
+        const localStart = new Date(
+          Number(startParts[0]),
+          Number(startParts[1]) - 1,
+          Number(startParts[2])
+        );
+        const localEnd = new Date(
+          Number(endParts[0]),
+          Number(endParts[1]) - 1,
+          Number(endParts[2])
+        );
+
+        // Cria TODOS os dias entre start e end
+        const days = eachDayOfInterval({ start: localStart, end: localEnd });
+
+        return days.map((day: Date) => ({
+          id: `${item.id}`, // id único por dia
+          idUnique: `${item.id}-${day.toISOString()}`,
+          title: item.title ?? "Schedule",
+          employees: item.employees ?? "Error",
+          tasks: item.tasks ?? "No tasks",
+          start: day,
+          end: day,
+        }));
+      });
+
+      setSchedule(formatted);
+    };
+
+    getSched();
+  }, []);
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
     checkMobile();
@@ -43,7 +96,6 @@ export default function MonthlyCalendar({ events }: Props) {
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
 
-  // Dias para desktop: inclui extras
   const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
   const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
 
@@ -54,99 +106,100 @@ export default function MonthlyCalendar({ events }: Props) {
     day = addDays(day, 1);
   }
 
-  const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const isToday = (day: Date) => isSameDay(day, new Date());
 
-  // Função que retorna a cor do dia
   const getDayColor = (day: Date) => {
-    const weekday = getDay(day); // 0=Domingo, 6=Sábado
-    if (weekday === 0) return "bg-red-200"; // domingo
-    if (weekday === 6) return "bg-yellow-200"; // sábado
-    return "bg-blue-50"; // dias de semana
+    const weekday = getDay(day);
+    if (weekday === 0) return "bg-red-200"; // Domingo
+    if (weekday === 6) return "bg-yellow-200"; // Sábado
+    return "bg-blue-50"; // Dias da semana
   };
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow w-full">
-      {/* Navegação do mês */}
-      <div className="flex justify-between items-center mb-4">
-        <button
-          onClick={prevMonth}
-          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-        >
+    <>
+      {/* 🔒 NAVEGAÇÃO FIXA NO MOBILE */}
+      <div
+        className={`flex w-full justify-between items-center px-4 h-[${NAV_HEIGHT}px] bg-white    
+          ${
+            isMobile
+              ? "fixed top-10 pb-3 pt-5 left-0 right-0"
+              : "relative mb-4 pt-5"
+          }`}
+      >
+        <button onClick={prevMonth} className="px-3 py-2 bg-gray-200 rounded">
           &lt; Back
         </button>
 
-        <h2 className="text-xl font-semibold">{format(monthStart, "MMMM yyyy")}</h2>
+        <h2 className="text-lg font-semibold">
+          {format(monthStart, "MMMM yyyy")}
+        </h2>
 
-        <button
-          onClick={nextMonth}
-          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-        >
+        <button onClick={nextMonth} className="px-3 py-2 bg-gray-200 rounded">
           Next &gt;
         </button>
       </div>
 
-      {/* Cabeçalho dias da semana - só desktop */}
-      {!isMobile && (
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {weekDays.map((wd, idx) => {
-            let colorClass = "text-black";
-            if (idx === 5) colorClass = "text-yellow-600";
-            if (idx === 6) colorClass = "text-red-600";
+      {/* ⬇️ CONTEÚDO (empurrado para baixo no mobile) */}
+      <div
+        className={`p-4 bg-white rounded-lg shadow w-full
+          ${isMobile ? `pt-[${NAV_HEIGHT + 16}px]` : ""}
+        `}
+      >
+        <div
+          className={
+            isMobile ? "flex flex-col gap-2 mt-16" : "grid grid-cols-7 gap-1"
+          }
+        >
+          {(isMobile
+            ? Array.from({ length: monthEnd.getDate() }).map((_, i) =>
+                addDays(monthStart, i)
+              )
+            : allDays
+          ).map((day) => {
+            const dayEvents = schedule.filter((e) => isSameDay(e.start, day));
+            const isCurrentMonth = day.getMonth() === monthStart.getMonth();
+
+            // Evita mostrar dias fora do mês atual no mobile
+            if (isMobile && !isCurrentMonth) return null;
+
             return (
-              <div key={wd} className={`text-center font-semibold ${colorClass}`}>
-                {wd}
+              <div
+                key={day.toISOString()}
+                className={`p-2 rounded min-h-[90px] border transition-all 
+                  ${
+                    isToday(day)
+                      ? "bg-green-200 border-green-600 ring-2 ring-green-500"
+                      : isCurrentMonth
+                      ? getDayColor(day)
+                      : "bg-gray-100 opacity-50"
+                  }`}
+              >
+                <div className="font-semibold text-sm mb-1">
+                  {format(day, "EEE d")}
+                </div>
+
+                {dayEvents.map((event) => (
+                  <div
+                    key={event.idUnique}
+                    className="bg-blue-600 text-white p-2 rounded mb-1 text-xs"
+                  >
+                    <strong>{event.title}</strong>
+                    <div>{event.employees}</div>
+                    <div>{event.tasks}</div>
+                    {event.id}
+                    <button
+                      onClick={() => handleDelete(event.id)}
+                      className="  right-1 text-[10px] bg-red-600 px-2 py-1 rounded hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
               </div>
             );
           })}
         </div>
-      )}
-
-      {/* Dias do mês */}
-      <div className={isMobile ? "flex flex-col gap-2" : "grid grid-cols-7 gap-1"}>
-        {(isMobile
-          ? Array.from({ length: monthEnd.getDate() }).map((_, i) =>
-              addDays(monthStart, i)
-            )
-          : allDays
-        ).map((day) => {
-          const dayEvents = events.filter((e) => isSameDay(e.start, day));
-          const isCurrentMonth = day.getMonth() === monthStart.getMonth();
-
-          // Mobile: não exibe dias extras
-          if (isMobile && !isCurrentMonth) return null;
-
-          return (
-            <div
-              key={day.toString()}
-              className={`p-2 rounded min-h-[80px] border ${
-                isMobile
-                  ? getDayColor(day)
-                  : isCurrentMonth
-                  ? getDayColor(day)
-                  : "bg-gray-100 opacity-50"
-              }`}
-            >
-              <div
-                className={`font-semibold mb-1 text-sm ${
-                  isMobile ? "text-left" : "text-center"
-                }`}
-              >
-                {format(day, "EEE d")}
-              </div>
-
-              {dayEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-2 rounded-lg shadow mb-1 break-words hover:scale-105 transform transition-all duration-200"
-                >
-                  <h1 className="text-yellow-300 font-semibold text-sm">{event.title}</h1>
-                  <p className="text-white/90 text-xs">Employees: {event.employees}</p>
-                </div>
-              ))}
-            </div>
-          );
-        })}
       </div>
-    </div>
+    </>
   );
 }

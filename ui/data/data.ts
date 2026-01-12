@@ -3,6 +3,8 @@
 import postgres from "postgres";
 import bcrypt from "bcrypt";
 import { UserDB, WorkDayDB, ProjectsTable } from "@/myTypeScript";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
@@ -151,13 +153,52 @@ export async function fetchProjectPages(query: string) {
   }
 }
 
-export async function getAllEmployees(){
-  try{
-
-    const data = await sql<{id: string, name: string}[]> `SELECT id, name FROM users.usertb WHERE usertype= ${"employee"}`;
+export async function getAllEmployees() {
+  try {
+    const data = await sql<{ id: string, name: string }[]> `SELECT id, name FROM users.usertb WHERE usertype= ${"employee"}`;
     return data;
-  }catch(error){
+  } catch (error) {
     throw new Error('Failed to get employees.')
   }
- 
+
+}
+
+export async function getAllProjects() {
+  try {
+    const allProjects = await sql<{ id: string, projectname: string }[]>`
+            SELECT id, projectname FROM users.project; 
+        `;
+
+    return allProjects;
+  } catch (error) {
+    throw new Error("Failed to get project!")
+  }
+
+}
+
+export async function getSchedule() {
+  try {
+    const allSchedules = await sql<{ id: string, title: string, employees: String, tasks: String, start_date: string, end_date: string }[]>`
+            SELECT id, title, employees, tasks, start_date, end_date FROM users.schedule; 
+        `;
+
+    return allSchedules;
+  } catch (error) {
+    throw new Error("Failed to get schedule")
+  }
+
+}
+
+export async function deleteSchedule(id: string) {
+  if (!id) {
+    throw new Error("ID is required");
+  }
+
+  await sql`
+    DELETE FROM users.schedule
+    WHERE id = ${id}
+  `;
+  
+  return { success: true };
+
 }

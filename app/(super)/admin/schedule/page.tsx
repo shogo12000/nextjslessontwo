@@ -1,8 +1,11 @@
+ 
+import { Button } from "@/ui/Button";
 import WeeklyCalendar from "./BigCalendar";
+ 
+import { BtnCreateSchedule } from "@/ui/super/ButtonSchedule";
 
 export default function page() {
-  const events = [
-    
+  const events = [    
     {
       id: "1",
       title: "Shop",
@@ -34,11 +37,12 @@ export default function page() {
       end: new Date(2026, 0, 8),
     },
   ];
-  return (
-    <>
-      <h1>uol</h1>
 
-      <WeeklyCalendar events={events} />
+ 
+  return (
+    <>  
+       <BtnCreateSchedule />
+      <WeeklyCalendar  />
     </>
   );
 }

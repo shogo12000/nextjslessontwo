@@ -28,6 +28,28 @@ const registerSchema = z.object({
     }
 );
 
+const scheduleSchema = z.object({
+    projects: z
+        .string()
+        .min(1, "Project is required"),
+
+    startDate: z.coerce.date({
+        error: issue =>
+            issue.input === undefined || issue.input === ""
+                ? "Start date is required"
+                : "Invalid start date",
+    }),
+
+    endDate: z.coerce.date({
+        error: issue =>
+            issue.input === undefined || issue.input === ""
+                ? "End date is required"
+                : "Invalid end date",
+    }),
+
+    employees: z.string().min(1, "Need at least 1 employee"),
+    //employees:z.array(z.string()).min(1,{error: "Need at least 1 employee"}), 
+})
 
 const projectSchema = z.object({
     projectName: z
@@ -325,3 +347,47 @@ export async function updateProject(id: string, prevState: any, formData: FormDa
     revalidatePath('/admin/project');
     redirect('/admin/project');
 }
+
+export async function createSchedule(previusState: any, formData: FormData) {
+    try {
+        const result = scheduleSchema.safeParse({
+            projects: formData.get("projects"),
+            startDate: formData.get("startDate"),
+            endDate: formData.get("endDate"),
+            employees: formData.get("employees"),
+        });
+
+        if (!result.success) {
+            return { errors: treeifyError(result.error) }
+        }
+
+
+        const project = result.data.projects?.toString() ?? "";
+        const tasks = formData.get("tasks")?.toString() ?? "";
+        const startDate = formData.get("startDate")?.toString() ?? "";
+        const endDate = formData.get("endDate")?.toString() ?? "";
+        // const startDate = result.data.startDate?.toString() ?? "";
+        // const endDate = result.data.endDate?.toString() ?? "";
+        const employees = result.data.employees?.toString() ?? "";
+
+        const projectNameResult  = await sql` SELECT projectname FROM users.project WHERE id = ${project}`;
+        console.log(projectNameResult);
+        const projectName = projectNameResult.length > 0 ? projectNameResult[0].projectname : null;
+
+        if (!projectName) {
+            throw new Error('Projeto não encontrado!');
+        }
+ 
+        const user = await sql`
+            INSERT INTO users.schedule (project_id, title, tasks, start_date, end_date, employees)
+            VALUES (${project}, ${projectName}, ${tasks}, ${startDate}, ${endDate}, ${employees})
+            `;
+
+ 
+    } catch (error) {
+        return { message: "Error try again later!" }
+    }
+    revalidatePath('/admin/schedule');
+    redirect('/admin/schedule');
+}
+
