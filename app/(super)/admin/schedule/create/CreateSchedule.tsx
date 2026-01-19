@@ -18,7 +18,7 @@ import {
 
 type Props = {
   createSchedule: (prevState: any, formData: FormData) => Promise<any>;
-  mode: "create" | "edit";
+  mode?: "create" | "edit";
   scheduleId?: string;
 };
 
