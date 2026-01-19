@@ -8,6 +8,7 @@ import bcrypt from "bcrypt";
 import { ProjectsTable } from "@/myTypeScript";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { sendWhatsAppMessage } from "./whatsapp";
 
 
 const loginSchema = z.object({
@@ -370,20 +371,27 @@ export async function createSchedule(previusState: any, formData: FormData) {
         // const endDate = result.data.endDate?.toString() ?? "";
         const employees = result.data.employees?.toString() ?? "";
 
-        const projectNameResult  = await sql` SELECT projectname FROM users.project WHERE id = ${project}`;
+        const projectNameResult = await sql` SELECT projectname FROM users.project WHERE id = ${project}`;
         console.log(projectNameResult);
         const projectName = projectNameResult.length > 0 ? projectNameResult[0].projectname : null;
 
         if (!projectName) {
             throw new Error('Projeto não encontrado!');
         }
- 
+
         const user = await sql`
             INSERT INTO users.schedule (project_id, title, tasks, start_date, end_date, employees)
             VALUES (${project}, ${projectName}, ${tasks}, ${startDate}, ${endDate}, ${employees})
             `;
 
- 
+        const message = `
+            📅 *New Schedule Created*
+            🏗 Project: ${projectName}
+            📝 Tasks: ${tasks}
+            📆 ${startDate} → ${endDate}
+    `;
+        // await sendWhatsAppMessage("+12368801506", message);
+        await sendWhatsAppMessage("+16724729552", message);
     } catch (error) {
         return { message: "Error try again later!" }
     }
@@ -391,3 +399,98 @@ export async function createSchedule(previusState: any, formData: FormData) {
     redirect('/admin/schedule');
 }
 
+
+export async function updateScheduleById(
+    previousState: any,
+    formData: FormData
+) {
+    try {
+        const scheduleId = formData.get("scheduleId")?.toString();
+
+        if (!scheduleId) {
+            return { message: "Schedule ID is missing" };
+        }
+
+        const result = scheduleSchema.safeParse({
+            projects: formData.get("projects"),
+            startDate: formData.get("startDate"),
+            endDate: formData.get("endDate"),
+            employees: formData.get("employees"),
+        });
+
+        if (!result.success) {
+            return { errors: treeifyError(result.error) };
+        }
+
+        const project = result.data.projects?.toString() ?? "";
+        const tasks = formData.get("tasks")?.toString() ?? "";
+        // const startDate = result.data.startDate?.toString() ?? "";
+        // const endDate = result.data.endDate?.toString() ?? "";
+        const startDate = formData.get("startDate")?.toString() ?? "";
+        const endDate = formData.get("endDate")?.toString() ?? "";
+        const employees = result.data.employees?.toString() ?? "";
+
+
+
+        // UPDATE
+        await sql`
+      UPDATE users.schedule
+      SET 
+        tasks = ${tasks},
+        start_date = ${startDate},
+        end_date = ${endDate},
+        employees = ${employees}
+      WHERE id = ${scheduleId}
+    `;
+    } catch (error) {
+        console.error(error);
+        return { message: "Error updating schedule" };
+    }
+
+    revalidatePath("/admin/schedule");
+    redirect("/admin/schedule");
+}
+
+
+export async function changeSchedule(previusState: any, formData: FormData) {
+    try {
+        const result = scheduleSchema.safeParse({
+            projects: formData.get("projects"),
+            startDate: formData.get("startDate"),
+            endDate: formData.get("endDate"),
+            employees: formData.get("employees"),
+        });
+
+        if (!result.success) {
+            return { errors: treeifyError(result.error) }
+        }
+
+
+        const project = result.data.projects?.toString() ?? "";
+        const tasks = formData.get("tasks")?.toString() ?? "";
+        const startDate = formData.get("startDate")?.toString() ?? "";
+        const endDate = formData.get("endDate")?.toString() ?? "";
+        // const startDate = result.data.startDate?.toString() ?? "";
+        // const endDate = result.data.endDate?.toString() ?? "";
+        const employees = result.data.employees?.toString() ?? "";
+
+        const projectNameResult = await sql` SELECT projectname FROM users.project WHERE id = ${project}`;
+        console.log(projectNameResult);
+        const projectName = projectNameResult.length > 0 ? projectNameResult[0].projectname : null;
+
+        if (!projectName) {
+            throw new Error('Projeto não encontrado!');
+        }
+
+        const user = await sql`
+            INSERT INTO users.schedule (project_id, title, tasks, start_date, end_date, employees)
+            VALUES (${project}, ${projectName}, ${tasks}, ${startDate}, ${endDate}, ${employees})
+            `;
+
+
+    } catch (error) {
+        return { message: "Error try again later!" }
+    }
+    revalidatePath('/admin/schedule');
+    redirect('/admin/schedule');
+}

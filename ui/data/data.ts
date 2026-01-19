@@ -190,15 +190,39 @@ export async function getSchedule() {
 }
 
 export async function deleteSchedule(id: string) {
-  if (!id) {
-    throw new Error("ID is required");
-  }
+  try {
+    if (!id) {
+      throw new Error("ID is required");
+    }
 
-  await sql`
+    await sql`
     DELETE FROM users.schedule
     WHERE id = ${id}
   `;
-  
-  return { success: true };
 
+    return { success: true };
+  } catch (error) {
+    throw new Error("Error try Again!!!")
+  }
+}
+
+
+
+export async function getScheduleById(id: string) {
+  try {
+
+    if (!id) {
+      throw new Error("ID is required");
+    }
+
+    const result = await sql`
+    SELECT * FROM users.schedule
+    WHERE id = ${id}
+  `;
+
+    return result;
+
+  } catch (error) {
+    throw new Error("ID Error try Again!!!")
+  }
 }

@@ -14,6 +14,7 @@ import {
   getDay,
 } from "date-fns";
 import { deleteSchedule, getSchedule } from "@/ui/data/data";
+import Link from "next/link";
 
 type CalendarEvent = {
   id: string;
@@ -139,6 +140,39 @@ export default function MonthlyCalendar() {
         </button>
       </div>
 
+      <div
+        className={`p-0 bg-white rounded-lg shadow w-full
+    ${isMobile ? `pt-[${NAV_HEIGHT + 16}px]` : ""}
+  `}
+      >
+        {/* Dias da semana */}
+        {!isMobile && (
+          <div className="grid grid-cols-7 gap-1 mb-2 text-center text-sm font-semibold">
+            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => {
+              const isSaturday = day === "Sat";
+              const isSunday = day === "Sun";
+
+              return (
+                <div
+                  key={day}
+                  className={`py-2 rounded
+              ${
+                isSunday
+                  ? " text-red-500"
+                  : isSaturday
+                  ? " text-emerald-500"
+                  : " text-gray-700"
+              }
+            `}
+                >
+                  {day}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* ⬇️ CONTEÚDO (empurrado para baixo no mobile) */}
       <div
         className={`p-4 bg-white rounded-lg shadow w-full
@@ -181,18 +215,45 @@ export default function MonthlyCalendar() {
                 {dayEvents.map((event) => (
                   <div
                     key={event.idUnique}
-                    className="bg-blue-600 text-white p-2 rounded mb-1 text-xs"
+                    className="bg-blue-600 text-white p-3 rounded-lg mb-2 text-xs shadow-md flex flex-col gap-1"
                   >
-                    <strong>{event.title}</strong>
-                    <div>{event.employees}</div>
-                    <div>{event.tasks}</div>
-                    {event.id}
-                    <button
-                      onClick={() => handleDelete(event.id)}
-                      className="  right-1 text-[10px] bg-red-600 px-2 py-1 rounded hover:bg-red-700"
-                    >
-                      Delete
-                    </button>
+                    {/* Title */}
+                    <strong className="text-sm font-semibold">
+                      {event.title}
+                    </strong>
+
+                    {/* Details */}
+                    <div className="text-[11px] opacity-90">
+                      <span className="font-medium">Employees:</span>{" "}
+                      {event.employees}
+                    </div>
+
+                    <div className="text-[11px] opacity-90">
+                      <span className="font-medium">Tasks:</span> {event.tasks}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-[10px] opacity-70">
+                        ID: {event.id}
+                      </span>
+
+                      <div className="flex gap-1">
+                        <Link
+                          href={`/admin/schedule/create?mode=edit&id=${event.id}`}
+                          className="text-[10px] bg-yellow-500 px-2 py-1 rounded hover:bg-yellow-600 transition"
+                        >
+                          Edit
+                        </Link>
+
+                        <button
+                          onClick={() => handleDelete(event.id)}
+                          className="text-[10px] bg-red-600 px-2 py-1 rounded hover:bg-red-700 transition"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

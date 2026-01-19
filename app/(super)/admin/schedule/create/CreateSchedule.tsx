@@ -1,6 +1,5 @@
 "use client";
 
-import { createProject, createSchedule } from "@/app/lib/actions";
 import { lusitana } from "@/ui/fonts/fonts";
 import {
   TextField,
@@ -10,10 +9,27 @@ import {
   InputLabel,
   FormControl,
 } from "@mui/material";
-import { useActionState, useState, useEffect } from "react";
-import { getAllEmployees, getAllProjects } from "@/ui/data/data";
+import { useActionState, useEffect, useState } from "react";
+import {
+  getAllEmployees,
+  getAllProjects,
+  getScheduleById,
+} from "@/ui/data/data";
 
-export default function CreateSchedule() {
+type Props = {
+  createSchedule: (prevState: any, formData: FormData) => Promise<any>;
+  mode: "create" | "edit";
+  scheduleId?: string;
+};
+
+export default function CreateSchedule({
+  createSchedule,
+  mode,
+  scheduleId,
+}: Props) {
+  /* =======================
+     FORM STATE
+  ======================= */
   const [projectForm, setProjectForm] = useState({
     projects: "",
     tasks: "",
@@ -30,195 +46,200 @@ export default function CreateSchedule() {
     { id: string; projectname: string }[]
   >([]);
 
-  const [loadingPage, setLoadingPage] = useState(false);
+  const [loadingPage, setLoadingPage] = useState(true);
 
+  /* =======================
+     HANDLE CHANGE
+  ======================= */
   const handleChange = (event: any) => {
     const { name, value } = event.target;
 
-    // Para multi-select, value é array
     setProjectForm((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
+  /* =======================
+     LOAD PROJECTS + EMPLOYEES
+  ======================= */
   useEffect(() => {
-    const getEmployees = async () => {
+    const loadBaseData = async () => {
       try {
-        setLoadingPage(true);
-
-        const [resultEmployees, resultProjects] = await Promise.all([
+        const [employees, projects] = await Promise.all([
           getAllEmployees(),
           getAllProjects(),
         ]);
-        setAllProjects(resultProjects);
-        setAllEmployees(resultEmployees);
-        // se precisar depois:
-        // setAllProjects(resultProjects);
 
-        console.log(resultProjects);
-        console.log(resultEmployees);
-      } catch (error) {
-        console.error("Error loading data", error);
-      } finally {
-        setLoadingPage(false);
+        setAllEmployees(employees);
+        setAllProjects(projects);
+      } catch (err) {
+        console.error("Error loading base data", err);
       }
     };
 
-    getEmployees();
+    loadBaseData();
   }, []);
 
+  /* =======================
+     LOAD SCHEDULE (EDIT)
+  ======================= */
+  useEffect(() => {
+    if (mode === "edit" && scheduleId) {
+      const loadSchedule = async () => {
+        try {
+          const [schedule] = await getScheduleById(scheduleId);
+
+          if (!schedule) return;
+
+          setProjectForm({
+            projects: schedule.project_id,
+            tasks: schedule.tasks,
+            startDate: schedule.start_date,
+            endDate: schedule.end_date,
+            employees: schedule.employees
+              ? schedule.employees.split(",")
+              : [],
+          });
+        } catch (err) {
+          console.error("Error loading schedule", err);
+        } finally {
+          setLoadingPage(false);
+        }
+      };
+
+      loadSchedule();
+    } else {
+      setLoadingPage(false);
+    }
+  }, [mode, scheduleId]);
+
+  /* =======================
+     SERVER ACTION
+  ======================= */
   const [errorMessage, formCreateSchedule, isPending] = useActionState(
     createSchedule,
     null
   );
 
- 
+  /* =======================
+     RENDER
+  ======================= */
+  if (loadingPage) {
+    return (
+      <div className="flex w-full justify-center pt-10">
+        <div className="rounded-lg bg-gray-50 px-6 pb-6 pt-8 shadow">
+          <h1 className={`${lusitana.className} text-2xl`}>Loading...</h1>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-full justify-center items-start pt-10">
-      {loadingPage ? (
+      <form action={formCreateSchedule} className="w-full">
+        {/* hidden id for EDIT */}
+        {mode === "edit" && scheduleId && (
+          <input type="hidden" name="scheduleId" value={scheduleId} />
+        )}
+
         <div className="rounded-lg bg-gray-50 px-6 pb-6 pt-8 shadow">
-          <h1 className={`${lusitana.className} mb-6 text-2xl`}>Loading...</h1>
-        </div>
-      ) : (
-        <form action={formCreateSchedule} className="w-full  ">
-          <div className="rounded-lg bg-gray-50 px-6 pb-6 pt-8 shadow">
-            <h1 className={`${lusitana.className} mb-6 text-2xl`}>
-              Create Schedule
-            </h1>
+          <h1 className={`${lusitana.className} mb-6 text-2xl`}>
+            {mode === "create" ? "Create Schedule" : "Edit Schedule"}
+          </h1>
 
-            <div className="flex flex-col gap-4">
-              {/* Project Name */}
-              {/* Assigned Employees */}
-              <FormControl fullWidth>
-                <InputLabel>Project</InputLabel>
-                <Select
-                  name="projects"
-                  //   multiple
-                  value={projectForm.projects}
-                  onChange={handleChange}
-                  label="Project"
-                >
-                  {allProjects.map((project) => (
-                    <MenuItem key={project.id} value={project.id}>
-                      {project.projectname}
-                    </MenuItem>
-                  ))}
-                  {/* <MenuItem value="emp1">Employee 1</MenuItem>
-                  <MenuItem value="emp2">Employee 2</MenuItem>
-                  <MenuItem value="emp3">Employee 3</MenuItem> */}
-                </Select>
-              </FormControl>
-
-              {errorMessage?.errors?.properties?.projects?.errors[0] && (
-                <>
-                  <p className="text-sm text-red-500">
-                    {errorMessage?.errors?.properties?.projects?.errors[0]}
-                  </p>
-                </>
-              )}
-
-              {/* Tasks */}
-              <TextField
-                label="Tasks"
-                name="tasks"
-                value={projectForm.tasks}
+          <div className="flex flex-col gap-4">
+            {/* Project */}
+            <FormControl fullWidth>
+              <InputLabel>Project</InputLabel>
+              <Select
+                name="projects"
+                value={projectForm.projects}
                 onChange={handleChange}
-                multiline
-                rows={3}
+                label="Project"
+              >
+                {allProjects.map((project) => (
+                  <MenuItem key={project.id} value={project.id}>
+                    {project.projectname}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {errorMessage?.errors?.properties?.projects?.errors[0] && (
+              <p className="text-sm text-red-500">
+                {errorMessage.errors.properties.projects.errors[0]}
+              </p>
+            )}
+
+            {/* Tasks */}
+            <TextField
+              label="Tasks"
+              name="tasks"
+              value={projectForm.tasks}
+              onChange={handleChange}
+              multiline
+              rows={3}
+              fullWidth
+            />
+
+            {/* Dates */}
+            <div className="grid grid-cols-2 gap-3">
+              <TextField
+                label="Start Date"
+                name="startDate"
+                type="date"
+                value={projectForm.startDate}
+                onChange={handleChange}
+                InputLabelProps={{ shrink: true }}
                 fullWidth
               />
 
-              {/* Dates */}
-              <div className="w-full grid grid-cols-2 gap-3">
-                <TextField
-                  label="Start Date"
-                  name="startDate"
-                  type="date"
-                  value={projectForm.startDate}
-                  onChange={handleChange}
-                  InputLabelProps={{ shrink: true }}
-                  fullWidth
-                />
-
-                <TextField
-                  label="End Date"
-                  name="endDate"
-                  type="date"
-                  value={projectForm.endDate}
-                  onChange={handleChange}
-                  InputLabelProps={{ shrink: true }}
-                  fullWidth
-                />
-              </div>
-
-              <div className="w-full grid grid-cols-2 gap-3">
-                {errorMessage?.errors?.properties?.startDate?.errors[0] ? (
-                  <>
-                    <p className="text-sm text-red-500">
-                      {errorMessage?.errors?.properties?.startDate?.errors[0]}
-                    </p>
-                  </>
-                ) : (
-                  <span></span>
-                )}
-
-                {errorMessage?.errors?.properties?.endDate?.errors[0] && (
-                  <>
-                    <p className="text-sm text-red-500">
-                      {errorMessage?.errors?.properties?.endDate?.errors[0]}
-                    </p>
-                  </>
-                )}
-              </div>
-              {/* Assigned Employees */}
-              <FormControl fullWidth>
-                <InputLabel>Assigned Employees</InputLabel>
-                <Select
-                  name="employees"
-                  multiple
-                  value={projectForm.employees}
-                  onChange={handleChange}
-                  label="Assigned Employees"
-                >
-                  {allEmployees.map((emp) => (
-                    <MenuItem key={emp.name} value={emp.name}>
-                      {emp.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              {errorMessage?.errors?.properties?.employees?.errors[0] && (
-                <>
-                  <p className="text-sm text-red-500">
-                    {errorMessage?.errors?.properties?.employees?.errors[0]}
-                  </p>
-                </>
-              )}
-
-              {/* Submit */}
-              <Button
-                type="submit"
-                variant="contained"
-                size="large"
-                className="mt-2"
-                onClick={() => console.log(projectForm)}
-              >
-                Create Schedule
-              </Button>
-
-              {errorMessage?.message && (
-                <>
-                  <p className="text-sm text-red-500">
-                    {errorMessage?.message}
-                  </p>
-                </>
-              )}
+              <TextField
+                label="End Date"
+                name="endDate"
+                type="date"
+                value={projectForm.endDate}
+                onChange={handleChange}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+              />
             </div>
+
+            {/* Employees */}
+            <FormControl fullWidth>
+              <InputLabel>Assigned Employees</InputLabel>
+              <Select
+                name="employees"
+                multiple
+                value={projectForm.employees}
+                onChange={handleChange}
+                label="Assigned Employees"
+              >
+                {allEmployees.map((emp) => (
+                  <MenuItem key={emp.id} value={emp.name}>
+                    {emp.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Submit */}
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={isPending}
+            >
+              {mode === "create" ? "Create Schedule" : "Update Schedule"}
+            </Button>
+
+            {errorMessage?.message && (
+              <p className="text-sm text-red-500">{errorMessage.message}</p>
+            )}
           </div>
-        </form>
-      )}
+        </div>
+      </form>
     </div>
   );
 }
