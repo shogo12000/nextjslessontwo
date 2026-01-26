@@ -215,7 +215,7 @@ export default function MonthlyCalendar() {
                 {dayEvents.map((event) => (
                   <div
                     key={event.idUnique}
-                    className="bg-blue-600 text-white p-3 rounded-lg mb-2 text-xs shadow-md flex flex-col gap-1"
+                    className="bg-blue-200 text-black p-3 rounded-lg mb-2 text-xs shadow-md flex flex-col gap-1"
                   >
                     {/* Title */}
                     <strong className="text-sm font-semibold">
@@ -238,17 +238,17 @@ export default function MonthlyCalendar() {
                         ID: {event.id}
                       </span>
 
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 text-white">
                         <Link
                           href={`/admin/schedule/create?mode=edit&id=${event.id}`}
-                          className="text-[10px] bg-yellow-500 px-2 py-1 rounded hover:bg-yellow-600 transition"
+                          className="text-[10px] bg-blue-500 px-2 py-1 rounded hover:bg-blue-600 transition"
                         >
                           Edit
                         </Link>
 
                         <button
                           onClick={() => handleDelete(event.id)}
-                          className="text-[10px] bg-red-600 px-2 py-1 rounded hover:bg-red-700 transition"
+                          className="text-[10px] bg-red-500 px-2 py-1 rounded hover:bg-red-600 transition"
                         >
                           Delete
                         </button>

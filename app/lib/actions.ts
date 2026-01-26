@@ -276,6 +276,10 @@ export async function createProject(previusState: any, formData: FormData) {
             RETURNING id
         `;
 
+        return {
+            success: true,
+            message: "Project created successfully!"
+        }
 
     } catch (error) {
         console.error("Register error:", error);
@@ -389,6 +393,7 @@ export async function createSchedule(previusState: any, formData: FormData) {
             🏗 Project: ${projectName}
             📝 Tasks: ${tasks}
             📆 ${startDate} → ${endDate}
+            employees: ${employees}
     `;
         // await sendWhatsAppMessage("+12368801506", message);
         await sendWhatsAppMessage("+16724729552", message);
@@ -493,4 +498,16 @@ export async function changeSchedule(previusState: any, formData: FormData) {
     }
     revalidatePath('/admin/schedule');
     redirect('/admin/schedule');
+}
+
+export async function deleteProject(projectId: string) {
+    try {
+        await sql`
+      DELETE FROM users.project
+      WHERE id = ${projectId}
+    `;
+    } catch (error) {
+        throw new Error("Error deleting project");
+    }
+    revalidatePath("/admin/project");
 }

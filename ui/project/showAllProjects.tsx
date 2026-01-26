@@ -1,5 +1,6 @@
 import { fetchFilterProjects } from "../data/data";
 import Link from "next/link";
+import { deleteProject } from "@/app/lib/actions";
 
 function parseEmployees(employeesStr: string | null | undefined): string {
   if (!employeesStr) return "0"; // se vazio ou null retorna array vazio
@@ -12,7 +13,13 @@ function parseEmployees(employeesStr: string | null | undefined): string {
   return emp.length.toString();
 }
 
-export default async function ShowAllTables({ query, currentPage }: { query: string; currentPage: number }) {
+export default async function ShowAllTables({
+  query,
+  currentPage,
+}: {
+  query: string;
+  currentPage: number;
+}) {
   const projects = await fetchFilterProjects(query, currentPage);
 
   console.log(projects);
@@ -45,10 +52,25 @@ export default async function ShowAllTables({ query, currentPage }: { query: str
               {/* EDIT BUTTON */}
               <Link
                 href={`/admin/project/${project.id}/edit`}
-                className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100"
+                className="rounded-md bg-blue-500 px-3 py-1 text-xs text-white hover:bg-blue-600"
               >
                 ✏️ Edit
               </Link>
+              {/* <Link
+                href={`/admin/project/${project.id}/edit`}
+                className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100"
+              >
+                ✏️ Edit
+              </Link> */}
+
+              <form action={deleteProject.bind(null, project.id)}>
+                <button
+                  type="submit"
+                  className="rounded-md bg-red-500 px-3 py-1 text-xs text-white hover:bg-red-600"
+                >
+                  🗑️ Delete
+                </button>
+              </form>
             </div>
           </div>
 
